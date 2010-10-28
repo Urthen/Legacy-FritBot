@@ -1,0 +1,7 @@
+/backups/
+*.pyc
+*.pid
+*.log*
+fritbackup
+*.swp
+fritbot.tac

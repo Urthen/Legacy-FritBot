@@ -1,0 +1,32 @@
+body {background-color: #689; font-size: 14px; text-align: center;}
+ul {border: 1px solid #59b; margin: 0 30px; padding: 5px 25px; background-color: #d5f0f0; list-style: circle;}
+ol {font-size: 125%;}
+div {
+    border: 1px solid #59b;
+    background-color: #f0f5ff;
+    padding: 10px; margin: 10px 0;
+    text-align: left;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px; 
+}    
+p {padding-left: 20px;}
+h3 {padding-left: 10px;}
+a, a:link, a:visited {color: #000;}
+
+#sidebar {float: left; position: fixed; left: -8px; top: -145px; background-color: #e0ffe0;}
+#sidebar ul {margin: 5px;}
+#sidebar h3 {margin: auto 15px;}
+
+table {font-size: 12px; border-collapse: collapse;}
+td {border-bottom: 1px solid #d0d0d0; margin: 0; padding: 3px 4px; vertical-align: top;}
+th {border: 1px solid #000; margin: 0; cursor: pointer;}
+tr {cursor: pointer;}
+.rowEven {background-color: #e7e7f3;}
+thead .rowEven {background-color: #e0e0f0;}
+.rowEven .thOver {background-color: #e0ffe0;}
+.rowOver {background-color: #e0e0ff;}
+.rowSelect {background-color: #f5e0e0; cursor: default;}
+.forgethint {display: none; margin-top: 5px; font-weight: bold; margin-bottom: 5px;}
+.forgethint a {color: #300; font-style: italic; font-weight: normal;}
+.forgethint a:hover {text-decoration: underline; cursor: pointer;}

@@ -1,0 +1,238 @@
+<html>
+<head>
+<title>FRITBOT!</title>
+<link rel="StyleSheet" href="bucket.css" type="text/css" media="screen"/>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script> 
+<script type="text/javascript" src="main.js"></script>
+</head>
+<body>
+<img src="fritbot.jpg" title="Fuck you!" alt="Fuck you!"/>
+<div id="sidebar">
+    <h2>Fritbot Nav</h2>
+    <ul>
+        <li><a href="bucket.htm">Manual and Changelog</a></li>
+        <li><a href="factoids.php">Fact Database &amp; Management</a></li>
+        <li><a href="quotes.php">Quote Database &amp; Management</a></li>
+    </ul>
+    <h3>Main Menu</h3>
+</div>
+<div>
+<h1>HI I'M FRITBOT!</h1>
+
+    <p>Here's a (probably hideously incomplete and out of date) manual of roughly how the Fritbot operates. He is, however, prone to erratic behavior. This may or may not be a fault in his programming.</p>
+</div>
+    
+<div>    
+    <h2>Most Recent Changes</h2>
+    <h3>Sept 15 2010</h3>
+    <ul>
+        <li>Added main menu</li>
+        <li>Added "Useful" section</li>
+        <li>Added information about "seen" to Other Commands section</li>
+    </ul>
+    <p>For a detailed changelog <a href="#changes">click here</a></p>
+</div>
+
+<div>
+    <h2>Table of Contents</h2>
+    <ol>
+        <li><a href="#about">About Fritbot</a></li>
+        <li><a href="#addressing">Addressing Fritbot</a></li>
+        <li><a href="#useful">"Useful" Functions</a></li>
+        <li><a href="#factoids">Factoids</a></li>
+        <li><a href="#items">Items</a></li>
+        <li><a href="#quotes">Quotes</a></li>
+        <li><a href="#stats">Statistics</a></li>
+        <li><a href="#other">Other Commands</a></li>
+    </ol>
+</div>
+
+<div>
+    <a name="about"><h2>About Fritbot</h2></a>
+    <p>Mikey wrote Fritbot in Python. It runs on his desktop. Fritbot is loosely based on Bucket, #xkcd's bot of moderate internet fame. Fritbot's data is stored in an SQL server. No, you can't perform SQL injection attacks. SQL commands are scrubbed out first. KTHXBI</p>
+    <p>Fritbot is there to spice up your life! He's exactly as entertaining as you want him to be. Like Bazaarvoice, however, he relies on User Generated Content! Its up to you to give him all the spicy factoids and quotes to make his existance worthwhile. Use the commands below to control what Fritbot knows. The more he learns, the funnier he'll be! Be warned, however, as he tends to have a mind of his own, and is perfectly capable of learning things you didn't explicitly teach him. I do have one request: <b><i>If you are going to purposefully alter fritbot a lot in one go (trying to teach him a bunch of facts, etc) go to the bottest channel!!!</b></i> He lives there by default and has to be told to go to other channels, such as offtopic or design.</p>
+    <p>Fritbot has his own fan page on facebook here: <a href="http://www.facebook.com/pages/FritBot/126689200708222">http://www.facebook.com/pages/FritBot/126689200708222</a> Make sure to check out the discussion section for Shit Fritbot Said&trade;!</p>
+</div>
+
+<div>
+    <a name="addressing"><h2>Addressing Fritbot</h2></a>
+    <p>Most of the things Fritbot does are activated by directly addressing Fritbot, and following it up with a command. To do so, just speak his name and your command sentence in any room Fritbot is occupying. For example, "Fritbot: insult Mikey" will cause Fritbot to insult Mikey. A colon (:) or comma (,) directly after his name will be ignored, and the command parsed as normal. A complete list of commands is later in this document. Fritbot doesn't pay attention to capitolization, and he does go by several names, any of which can be used:</p>
+    <ul>
+        <li>fritbot</li>
+        <li>bucket (a homage to the original)</li>
+        <li>fuckbucket (al's request)</li>
+        <li>fribot</li>
+        <li>flirtbot</li>
+        <li>fritbut</li>
+        <li>fritbutt</li>
+    </ul>
+    <p>Anything sent to Fritbot will first be interpreted as a command, then as a fact, and if it is neither, it will produce an error message. Some commands are less exact than others, for example, although shutting up is triggered by quiet, saying "Fritbot, be quiet you moron" will be interpreted. (only some commands can be used like this, your milage may vary.) Fritbot will respond to commands in the channel he was given the command in, but all knowledge is shared between channels.</p>
+</div>
+
+<div>
+    <a name="useful"><h2>"Useful" things</h2></a>
+    <p>Fritbot has a few "useful" bits of functionality. Well... one. He can google things for you.</p>
+    <ul>
+        <li><i>google (phrase)</i>: Returns the first google search result for "phrase". Note this result may vary from what you get when using a browser.</li>        
+    </ul>
+</div>
+
+<div>
+    <a name="factoids"><h2>Factoids</h2></a>
+    <p>A primary purpose of Fritbot is the learning and regurgitating of little facts. A fact consists of a trigger, a verb, and a factoid. Whenever anyone says the trigger in a chat room, Fritbot will reply with the trigger, verb, and factoid together, completing the fact.</p>
+    <h3>Teaching Facts</h3>
+    <p>Teaching Fritbot facts is easy! Simply address fritbot and say the trigger, verb, and factoid. Only a few simple verbs are acknowledged by default; others can be explicitly represented by surrounding them with &lt; &gt;. Currently supported verbs:</p>
+    <ul>
+        <li>is</li>
+        <li>isn't</li>        
+        <li>has</li>
+        <li>are</li>        
+        <li>aren't</li>
+        <li>hates</li>
+        <li>loves</li>
+        <li>likes</li>
+        <li>said</li>
+        <li>says</li>
+    </ul>
+    <p>Any other verb must be marked as mentioned above, like &lt;eats&gt;. There are two special verbs; &lt;reply&gt; and &lt;alias&gt;, which must be escaped as stated here.</p>
+    <p>Reply will cause Fritbot to only say the factoid, not the trigger and verb, allowing you to create direct responses. For example:
+    <ul>
+        <li><i>fritbot purple is a color</i> will return "purple is a color" when triggered.</li>
+        <li><i>fritbot purple &lt;reply&gt; That's a color!</i> will return "That's a color!" when triggered.</li>
+    </ul>
+    <p>Alias will create a new fact that links to an existing fact. For example, "fritbot green &lt;alias&gt; purple" will cause green to trigger as if it were purple. Doing this will begin an alias chain. Whenever new facts are added to green, they will actually be added to purple, so be careful. Aliasing anything to green will also actually alias it to purple. The alias functionality should only be used when two triggers mean the same thing.</p>
+    <p>If you wish to change an existing fact into an alias, use the Alias command at the bottom of this document. Be sure to read all the caveats both here and in that section, as if you are not careful, you can seriously mess up facts.</p>
+    <h3>String Replacements</h3>
+    <p>There are several string replacements available for almost every fact. These will be replaced when the fact is triggered.</p>
+    <ul>
+        <li><i>$who</i>: Replaced by the person triggering the fact.</li>
+        <li><i>$what</i>: Replaced in certain variable facts. See the Variables section below.</li>
+        <li><i>$someone</i>: Replaced by the nickname of a random victim *ahem* user currently in the room.</li>
+        <li><i>$something</i>: Replaced by a completely random item, whether or not Fritbot holds it.</li>
+        <li><i>$inventory</i>: Replaced by an item in Fritbot's inventory.</li>
+        <li><i>$giveitem</i>: Replaced by an item in Fritbot's inventory, and also remvoes that item from the inventory.</li>
+        <li><i>$takeitem</i>: Replaced by the name of an item Fritbot doesn't currently have and adds it to his inventory.</li>
+    </ul>
+    <p>For example, a fact triggered with this text: "/me punches $someone in the face and steals $takeitem!" will return something like the following: "***Fritbot punches RandomGuy in the face and steals a candy bar!" "a candy bar" was some item previously given to then removed from Fritbot's inventory, and has now been added back in. It's important to maintain matching grammar with items, so don't use words like their, a, an, or some before them, or else it will look weird when triggered.</p>
+    <h3>Triggering Facts</h3>
+    <p>Whenever something is said in chat, fritbot dutifully checks the database for facts to regurgitate. If what was said matches a fact trigger exactly, he will say the fact. If a trigger is found as part of what was said, the fact might be said: There is some internal throttling to limit how often he will trigger a fact in this manner.</p>
+</div>
+<div>
+    <a name="items"><h2>Items</h2></a>
+    <p>A fun feature of Fritbot is his inventory system. Fritbot remembers all items ever given to him, including keeping up to 12 in his inventory at a time. Any items not in his inventory are remembered and can still be used, just in different contexts.</p>
+    <ul>
+        <li><i>fritbot have an item</i> will give Fritbot an item called "an item"</li>
+        <li><i>fritbot inventory</i> or <i>fritbot backpack</i> will make Fritbot list his current inventory.</li>
+    </ul>
+    <p>When creating items, use proper grammar... for example, saying "have a shovel" or "have some yellow snow" are acceptable, but "have cat" will look wrong when triggered. Items, once created, are always remembered until explicitly deleted. They won't appear in the backpack, but may come back when certain things are triggered. You can even add string replacements inside items, but be careful to not let it get recursive. $who and $somebody are perfectly safe, I'd prefer if you didn't try anything with the rest. For example, this is a current item: "$someone's pride"</p>
+    <p>Items by themselves don't do much, but can be used in facts. See above in the "string replacements" section for how items may be used in a fact. The messages for getting or swapping items once one is handed to Fritbot by a user are even "variable" facts: see the Variables section below. An example fact that uses items is "make something". Trigger it and see what you get!</p>
+</div>
+<div>
+    <a name="quotes"><h2>Quotes</h2></a>
+    <p>One of my favorite features of Fritbot is to remember personal one-liners. Think someone said something funny? Not funny enough to broadcast to ts-all@bazaarvoice.com, or put on darkmatter? Make Fritbot remember it! Fritbot can then be told later to recall quotes for specific users, posting them to chat.</p>
+    <ul>
+        <li>Remember quote: <i>remember (?P&lt;user&gt;\S+) (?P&lt;quote&gt;.+)</i></li>
+        <li>Recall quote: <i>quote (?P&t;user&gt;.*)</i></li>
+    </ul>
+    <p>Fritbot keeps a history of the last 20 things said by other users (Other than commands to fritbot). To have him save one, simply say "Fritbot remember (nick) (quote)", where (nick) is part of their nickname, and (quote) is part of what they said. To remember "Mikey: Something really dumb!" you could say "Fritbot remember mike dumb". </p>
+    <p>To later recall a random quote from a user, type something along the lines of "fritbot, quote mike". To remember a completely random quote from any user, type "fritbot quote %". One final note: I record who caused fritbot to remember things, so don't add tons of stupid crap for me to clean out! I'll beat you silly.</p>
+</div>
+<div>    
+    <a name="stats"><h2>Statistics</h2></a>
+    <p>Being a naturally competitive place, fritbot will keep track of some statistics in offtopic.</p>
+    <h3>Leaderboard</h3>
+        <p>Yep! Fritbot will keep a leaderboard of the best contributors. Fritbot can tell you who is on top, and what your current ranking is.</p>
+        <ul>
+            <li>Show leaders: <i>leaderboard</i></li>
+            <li>Show someone's rankings: <i>leaderboard (?P&lt;user&gt;)</i></li>
+        </ul>
+        <p>Usernames must be exact and "me" doesn't work, so to see my own rankings, I would go: "fritbot: leaderboard mr. fritters"</p>
+    <h3>Other statistics</h3>
+        <p>Typing "Fritbot, what was that" will cause fritbot to tell you some information about the most recently quoted fact. You can then choose to forget it by typing "Fritbot forget that"</p>
+        <p>Typing "Fritbot, quotestats (who)" will cause fritbot to give you some quote statistics for (who). Omit (who) to return your own quotestats.</p>
+        <p>Finally, using "fritbot stats" will give you a little bit of information about what fritbot knows.</p>
+</div>
+<div>
+    <a name="other"><h2>Other Commands</h2></a>
+    <p>There are several commands that can be invoked directly by addressing fritbot. The text in italics is the specific regex required to trigger them.</p>
+    <h3>Quiet</h3>    
+        <p>I aim to make sure Fritbot doesn't get spammy. As such, any user can use the shut up or come back commands. When silenced, Fritbot will only speak when directly spoken to, and even then some of the more annoying commands (like insult) won't work.</p>
+        <ul>
+            <li>Shut up: <i>((shut up)|(quiet( down)?)|(go away))( (for )?(?P&lt;time&gt;.*))?</i></li>
+            <li>Come back: <i>((come back)|(wake up)|(\Atalk))</i></li>
+        </ul>
+        <p>Simply saying "Fritbot shut up" will make him be quiet for one minute. He can be directed better by specifying a time, as in, "Fritbot shut up for a while" or "fritbot, shut up for 30m". Acceptable time values:</p>
+        <ul>
+            <li>a sec (30 seconds)</li>
+            <li>a bit (5 minutes)</li>
+            <li>a while (10 minutes)</li>
+            <li>A number of hours (1h), minutes (30m), or seconds (30s). Combinations not allowed (1h30m).</li>
+        </ul>
+        <p>To un-silence him early, tell him to come back, wake up, or talk. If things turn into a shut up/come back war, I'll consider restricting these commands. Until then, please, don't abuse these commands.</p>
+    <h3>User-finding</h3>
+        <p>Fritbot keeps track of what and when he last saw everyone talking in any chat room he currently occupies.</p>
+        <p>Type "seen (nickname)" to have fritbot return when he last saw that person talking, in which chat room, and what they last said.</p>
+    <h3>Fun Commands</h3>
+        <p>Why? Because I can.</p>
+        <p>To insult someone, type "fritbot insult (their name)". To insult yourself, type "fritbot insult me".</p>
+        <p>To have fritbot decide things for you, give him a list of things separated by "or". For example: "fritbot, pirates or ninjas or zombies?" If you'd like to have "or" in an actual choice, escape it with a \, like so: "fritbot, fight \or flight or some other thing"</p>
+        <p>To have fritbot answer a question, simply ask him it! Make sure to end it with a question mark or he won't know you are asking him something. For example: "Fritbot, are you awesome?"</p>
+    <h3>Variables</h3>
+        <p>Many of the things fritbot says are variable, such as his insults and error messages. These can be added and removed on the fly just like any fact.</p>
+        <p>To add a new random option to a variable, you can for example say "Fritbot: varinsult &lt;reply&gt; $what IS TEH DUM" where $what will be replaced by the target. Since these are triggered based off facts, all normal string replacements work ($someone, $who, etc). A list of currently defined special "variable" facts is below:</p>
+        <ul>
+            <li><i>varinsult</i>: Used in insults, $what is replaced by the targeted insultee.</li>
+            <li><i>varerror</i>: Error messages.</li>
+            <li><i>varawkward</i>: Responses to an awkard moment, triggered by ...</li>
+            <li><i>varfunny</i>: Responses to someone laughing</li>
+            <li><i>varanswer</i>: Responses to anything that looks like a question.</li>
+            <li><i>itemswap</i>: Used when an item needs to be dropped in return for a new one because the backpack was full. $what is the item gained. <b>This fact always should have at least one $giveitem!!!</b></li>
+            <li><i>itemtake</i>: Used when taking an item and there is backpack space for it. $what is the item gained.</li>
+        </ul>
+    <h3>Forgetting/Unforgetting things</h3>
+        <p>Since you can add quotes and variables, it might also be nice to be able to forget stupid ones. The information isn't purged from the database (to allow for undos), but they will not trigger anymore. This can be done by invoking the following:</p>
+        <ul><li>The actual regex: <i>(?P&lt;un&gt;un)?forget (?P&lt;all&gt;all )?(?P&lt;what&gt;(var(iable)?)|(quote)|(fact(oid)?))s? '?(?P&lt;which&gt;[^']+)'? (?P&lt;snip&gt;.+)</i></li></ul>
+        <p>Since that's somewhat of a mess, here's a list of the actual commands available:
+        <ul>
+            <li>forget item (exact item name)</li>
+            <li>forget quote (user's nickname) (snippet of quote to forget)</li>
+            <li>forget factoid (fact name/trigger) (snippet of fact to forget)</li>
+            <li>forget that</li>
+        </ul>
+        <p>The rest should be obvious, but using "forget that' will forget the most recently quoted factoid.</p>
+        <p>Unforgetting is done the exact same way for all of these options, only write unforget, instead of forget. By default, only one option will be forgotten per item/quote/fact, and it will return an error if there is more than one match for that snippet. If you are SURE you wish to forget/unforget all matches for that item/quote/fact, use (un)forget all (item/quote/fact) (name) (snippet) to force it. Please at least try without the all first, I don't want to have to clean up your mess. I keep logs of who forgot which options, so don't go forgetting tons of stuff that shouldn't be.</p>
+        <p>Again, both forget and unforget are open to the public, since its up to everyone what is and isn't completely stupid. If it turns into a war between people forgetting and unforgetting the same thing, I'll take away your toys.</p>
+    <h3>Aliasing Facts</h3>
+        <p>If you want one pre-existing fact to actually trigger the factoids of another fact, use the alias command. For example, if you activate "fritbot purple alias green" then whenever you say purple or green, it will act as if you had said green. This command can be undone by aliasing the trigger back to it's original value, as in "fritbot purple alias purple". </p>
+        <p><i>Note that the actual factoids themselves are NOT changed</i>: They will no longer be activated if you change the alias parent. If you change the alias back, they will then activated again. Additionally, if anything is currently aliased to the current fact, they will continue activate the current factoids that they already are rather than switching to the new ones: Fact aliases aren't really chains, just redirection to a different set of factoids. If you want any aliases to keep following, you will have to rebind the alias by calling this function again, which will pick back up the alias "chain."</p>
+</div>        
+<div>    
+    <a name="changes"><h2>Full Changelist</h2></a>
+    <h3>Sept 15 2010</h3>
+    <ul>
+        <li>Added main menu</li>
+        <li>Added "Useful" section</li>
+        <li>Added information about "seen" to Other Commands section</li>
+    </ul>
+    <h3>Aug 2 2010</h3>
+    <ul>
+        <li>Updated section on variables to reflect recent changes</li>
+        <li>Added section on items</li>
+        <li>Updated Factoids section to include new string replacements and supported verbs</li>
+    </ul>
+    <h3>June 20 2010</h3>
+    <ul>
+        <li>Added section on statistics</li>
+        <li>Updated how factoids are learned and triggered</li>
+        <li>Added information on forgetting facts</li>
+        <li>Added information on how to ask questions</li>
+        <li>CSS! Woo!</li>
+    </ul>
+    <h3>June 15 2010</h3>
+    <ul>
+        <li>Document origin</li>
+    </ul>
+</div>
+                        
+</body>
+</html>

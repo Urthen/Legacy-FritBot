@@ -1,10 +1,4 @@
 import re
-
-'''Register functionality with the bot'''
-def register(bot):
-    commands = [cmd for cmd in globals() if 'cmd_' in cmd]
-    for cmd in commands:
-        bot.__dict__[cmd] = globals()[cmd]
     
 '''List contents of the backpack'''
 def cmd_items_backpack(self, command, user, room):

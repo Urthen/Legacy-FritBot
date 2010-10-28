@@ -1,10 +1,4 @@
 import re
-
-'''Register functionality with the bot'''
-def register(bot):
-    commands = [cmd for cmd in globals() if 'cmd_' in cmd]
-    for cmd in commands:
-        bot.__dict__[cmd] = globals()[cmd]
      
 '''Quote a given user and quote'''
 def cmd_quotes_quote(self, command, user, room):       

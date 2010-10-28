@@ -25,17 +25,13 @@ class FritBot(muc.MUCClient):
     
     '''Initialize the bot: Only called on first bot start up.'''
     def __init__(self, server, roomlist, nick, rulerlist, connection):
-        muc.MUCClient.__init__(self)
+        muc.MUCClient.__init__(self)        
         
-        #Register commands
-        commands.core.register(self)
-        commands.common.register(self)
-        commands.users.register(self)
-        commands.facts.register(self)
-        commands.items.register(self)
-        commands.quotes.register(self)
-        commands.bonus.register(self)
-        print "Commands Loaded:", [cmd for cmd in self.__dict__ if 'cmd_' in cmd]
+        #Register chat triggers
+        self.chat_triggers = [
+            commands.facts.chatFactCheck,
+            commands.bonus.chatReplacements,
+        ]
         
         #Set up initial data
         self.server = server
@@ -65,31 +61,31 @@ class FritBot(muc.MUCClient):
         
         #Set command order
         self.commands = [        
-            (re.compile(r'\Ashut ?down', re.I), self.cmd_core_shutdown, 0),
-            (re.compile('\Ainsult', re.I), self.cmd_bonus_insult, 2),
-            (re.compile('\A(((go)|(jump)) ((to)|(in))|(join))', re.I), self.cmd_core_jump, 1),
-            (re.compile('\A(leave)', re.I),  self.cmd_core_leave, 0),
-            (re.compile('\A([^\.\?]*) ((or)|(vs)) ([^\.\?]+)[\?\.]?', re.I), self.cmd_bonus_or, 2),
-            (re.compile('((shut( the fuck)? ?up)|(quiet)|(go away))', re.I), self.cmd_core_quiet, 0),
-            (re.compile('((come back)|(wake up)|(\Atalk))', re.I), self.cmd_core_wakeup, 1),
-            (re.compile('\Aremember', re.I), self.cmd_quotes_remember, 1),
-            (re.compile('\Aquote ', re.I), self.cmd_quotes_quote, 2),
-            (re.compile('\A(un)?forget', re.I), self.cmd_common_forget, 2),
-            (re.compile(' alias ', re.I), self.cmd_facts_alias, 2),
-            (re.compile('\Aquotestats', re.I), self.cmd_quotes_quotestats, 2),
-            (re.compile('\Awhat( the fuck)? was that', re.I), self.cmd_facts_whatwas, 2),
-            (re.compile('\Astats', re.I), self.cmd_common_stats, 2),
-            (re.compile('\A(un)?lock', re.I), self.cmd_facts_lock, 2),
-            (re.compile('leader', re.I), self.cmd_common_leaderboard, 2),
-            (re.compile('(become)|(ghost)', re.I), self.cmd_core_ghost, 2),
-            (re.compile('(backpack)|(inventory)', re.I), self.cmd_items_backpack, 2),
-            (re.compile('\A((google)|(search)) ', re.I), self.cmd_bonus_google, 1),
-            (re.compile('\Aauth ', re.I), self.cmd_core_auth, 0),
-            (re.compile('\Aseen ', re.I), self.cmd_users_seen, 1),
-            (re.compile('mad ?lib', re.I), self.cmd_bonus_madlib, 2),            
-            (self.static_rex['question'], self.cmd_bonus_answer, 2),            
-            (re.compile('(have)|(take)', re.I), self.cmd_items_have, 2),            
-            (self.static_rex['learn'], self.cmd_facts_learn, 1),
+            (re.compile(r'\Ashut ?down', re.I), commands.core.cmd_core_shutdown, 0),
+            (re.compile('\Ainsult', re.I), commands.bonus.cmd_bonus_insult, 2),
+            (re.compile('\A(((go)|(jump)) ((to)|(in))|(join))', re.I), commands.core.cmd_core_jump, 1),
+            (re.compile('\A(leave)', re.I),  commands.core.cmd_core_leave, 0),
+            (re.compile('\A([^\.\?]*) ((or)|(vs)) ([^\.\?]+)[\?\.]?', re.I), commands.bonus.cmd_bonus_or, 2),
+            (re.compile('((shut( the fuck)? ?up)|(quiet)|(go away))', re.I), commands.core.cmd_core_quiet, 0),
+            (re.compile('((come back)|(wake up)|(\Atalk))', re.I), commands.core.cmd_core_wakeup, 1),
+            (re.compile('\Aremember', re.I), commands.quotes.cmd_quotes_remember, 1),
+            (re.compile('\Aquote ', re.I), commands.quotes.cmd_quotes_quote, 2),
+            (re.compile('\A(un)?forget', re.I), commands.common.cmd_common_forget, 2),
+            (re.compile(' alias ', re.I), commands.facts.cmd_facts_alias, 2),
+            (re.compile('\Aquotestats', re.I), commands.quotes.cmd_quotes_quotestats, 2),
+            (re.compile('\Awhat( the fuck)? was that', re.I), commands.facts.cmd_facts_whatwas, 2),
+            (re.compile('\Astats', re.I), commands.common.cmd_common_stats, 2),
+            (re.compile('\A(un)?lock', re.I), commands.facts.cmd_facts_lock, 2),
+            (re.compile('leader', re.I), commands.common.cmd_common_leaderboard, 2),
+            (re.compile('(become)|(ghost)', re.I), commands.core.cmd_core_ghost, 2),
+            (re.compile('(backpack)|(inventory)', re.I), commands.items.cmd_items_backpack, 2),
+            (re.compile('\A((google)|(search)) ', re.I), commands.bonus.cmd_bonus_google, 1),
+            (re.compile('\Aauth ', re.I), commands.core.cmd_core_auth, 0),
+            (re.compile('\Aseen ', re.I), commands.users.cmd_users_seen, 1),
+            (re.compile('mad ?lib', re.I), commands.bonus.cmd_bonus_madlib, 2),            
+            (self.static_rex['question'], commands.bonus.cmd_bonus_answer, 2),            
+            (re.compile('(have)|(take)', re.I), commands.items.cmd_items_have, 2),            
+            (self.static_rex['learn'], commands.facts.cmd_facts_learn, 1),
         ]              
         
         #Setup SQL
@@ -305,48 +301,11 @@ class FritBot(muc.MUCClient):
         history = (user, body)   
         if len(room.data['history']) > 40:
             room.data['history'] = room.data['history'][1:]
-        room.data['history'].append(history)                        
+        room.data['history'].append(history)
                 
-        if not self.squelched(room):                
-            #pickup any factoids after "fritbot", otherwise treat it as a malformed command
-                        
-            rex = self.static_rex['command'].search(body)
-            
-            if rex is None:
-                rex = re.search(r'\A@?(%s)[,:]?\s(?P<command>.*)' % room.nick, body, re.I)
-            
-            #Check for invalid commands
-            if rex is not None:
-                command = rex.group("command")
-                
-                if not self.checkFactoids(command, user, room, True):            
-                    self.spoutFact(room, "varerror", user.nick)    
-                
-                return    
-            
-            #TODO: move this to commands.facts            
-            #check for factoids                    
-            if self.checkFactoids(body, user, room):   
-                return
-            
-            #TODO: Move these to commands.bonus
-            #sex replacement
-            rex = self.static_rex['ex'].search(body)                            
-            if rex is not None and random.random() > 0.6:
-                if random.random() * 50 < len(body):        
-                    sex = re.search(r"\bex\w*( [\w]+)?", body).group()  
-                    message = "{0}? More like S{1}!".format(sex, sex.upper())
-                else:
-                    message = self.static_rex['anex'].sub(r'a sex', body)
-                    message = self.static_rex['ex'].sub(r'sex', message)
-                self.sendChat(room, message, True)   
-                return    
-                
-            #awkward
-            rex = self.static_rex['awkward'].search(body)
-            if rex is not None or body == '\xe2\x80\xa6':
-                self.spoutFact(room, "varawkward", user.nick)
-                return     
+        for trigger in self.chat_triggers:
+            if trigger(self, body, user, room):
+               break 
                                                                                                                                                
     '''Check a line to see if any valid facts were triggered'''
     def checkFactoids(self, body, user, room, force=False):

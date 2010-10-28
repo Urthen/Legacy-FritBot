@@ -1,10 +1,5 @@
 import re, time
 
-'''Register functionality with the bot'''
-def register(bot):
-    commands = [cmd for cmd in globals() if 'cmd_' in cmd]
-    for cmd in commands:
-        bot.__dict__[cmd] = globals()[cmd]
 
 '''Change authorization level of a room'''
 def cmd_core_auth(self, command, user, room):

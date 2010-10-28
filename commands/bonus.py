@@ -1,12 +1,25 @@
 import re, urllib, simplejson
 from twisted.internet import reactor
 
-'''Register functionality with the bot'''
-def register(bot):
-    commands = [cmd for cmd in globals() if 'cmd_' in cmd]
-    for cmd in commands:
-        bot.__dict__[cmd] = globals()[cmd]
-     
+def chatReplacements(self, body, user, room):
+    #sex replacement
+    rex = self.static_rex['ex'].search(body)                            
+    if rex is not None and random.random() > 0.6:
+        if random.random() * 50 < len(body):        
+            sex = re.search(r"\bex\w*( [\w]+)?", body).group()  
+            message = "{0}? More like S{1}!".format(sex, sex.upper())
+        else:
+            message = self.static_rex['anex'].sub(r'a sex', body)
+            message = self.static_rex['ex'].sub(r'sex', message)
+        self.sendChat(room, message, True)   
+        return    
+        
+    #awkward
+    rex = self.static_rex['awkward'].search(body)
+    if rex is not None or body == '\xe2\x80\xa6':
+        self.spoutFact(room, "varawkward", user.nick)
+        return
+        
 '''Answer a question'''
 #TODO: Better responses based on what type of question was asked (who, what, how, etc)
 def cmd_bonus_answer(self, command, user, room):

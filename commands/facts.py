@@ -4,11 +4,25 @@ import re
 def cleanup(string):
     return re.sub("[\\.,\\?!'\"-_=\\\\\\*]", '', string.lower()).strip()
     
-'''Register functionality with the bot'''
-def register(bot):
-    commands = [cmd for cmd in globals() if 'cmd_' in cmd]
-    for cmd in commands:
-        bot.__dict__[cmd] = globals()[cmd]
+def chatFactCheck(self, body, user, room):
+    #pickup any factoids after "fritbot", otherwise treat it as a malformed command                        
+    rex = self.static_rex['command'].search(body)
+    
+    if rex is None:
+        rex = re.search(r'\A@?(%s)[,:]?\s(?P<command>.*)' % room.nick, body, re.I)
+    
+    #Check for invalid commands
+    if rex is not None:
+        command = rex.group("command")
+        
+        if not self.checkFactoids(command, user, room, True):            
+            self.spoutFact(room, "varerror", user.nick)    
+        
+        return 
+        
+    #check for factoids                    
+    if self.checkFactoids(body, user, room):   
+        return
 
 '''Alias one fact to another'''
 def cmd_facts_alias(self, command, user, room):

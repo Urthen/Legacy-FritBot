@@ -11,12 +11,6 @@ def getPos(rows, nick):
             return "{0} (#{1})".format(row[1], pos)
         lastcount = row[1]
     return "None"
-
-'''Register functionality with the bot'''
-def register(bot):
-    commands = [cmd for cmd in globals() if 'cmd_' in cmd]
-    for cmd in commands:
-        bot.__dict__[cmd] = globals()[cmd]
      
 '''Forget a bit of content'''
 def cmd_common_forget(self, command, user, room):

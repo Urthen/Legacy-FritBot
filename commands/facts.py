@@ -1,5 +1,9 @@
 import re
 
+#TODO: Migrate this to a common module
+def cleanup(string):
+    return re.sub("[\\.,\\?!'\"-_=\\\\\\*]", '', string.lower()).strip()
+    
 '''Register functionality with the bot'''
 def register(bot):
     commands = [cmd for cmd in globals() if 'cmd_' in cmd]

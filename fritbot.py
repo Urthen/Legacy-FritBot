@@ -6,30 +6,24 @@ from wokkel import muc
 import re, random, sys, time, datetime, urllib, simplejson
 import commands.core, commands.common, commands.users, commands.facts, commands.items, commands.quotes, commands.bonus
 
+#TODO: Migrate this to a common module
 def cleanup(string):
     return re.sub("[\\.,\\?!'\"-_=\\\\\\*]", '', string.lower()).strip()
     
+#TODO: Figure out if I actually need this function...    
 def timeparse(s):
     return datetime.datetime(int(s[0:4]),int(s[5:7]),int(s[8:10]),int(s[11:13]), int(s[14:16]), int(s[17:19]))
     
+#Setup some global variables
+#TODO: Make these externally configurable    
 rawverblist = ["is", "isn\'?t", "has", "are", "hates", "loves", "likes", "aren\'?t", "said", "says"]
 accepted_name_list = ["fritbot", "fribot", "flirtbot", "fritbut", "fritbutt", "bucket", "fuckbucket", "firbot", "fb"]
 special_facts = ["itemtake", "itemswap", "varerror", "varinsult", "varfunny", "varawkward", "varinsult"]
 item_max = 12
 
-def getPos(rows, nick):
-    pos = 0
-    lastcount = 0
-    for row in rows:
-        if row[1] != lastcount:
-            pos += 1
-        if nick == row[0]:
-            return "{0} (#{1})".format(row[1], pos)
-        lastcount = row[1]
-    return "None"
-
 class FritBot(muc.MUCClient):   
     
+    '''Initialize the bot: Only called on first bot start up.'''
     def __init__(self, server, roomlist, nick, rulerlist, connection):
         muc.MUCClient.__init__(self)
         
@@ -43,6 +37,7 @@ class FritBot(muc.MUCClient):
         commands.bonus.register(self)
         print "Commands Loaded:", [cmd for cmd in self.__dict__ if 'cmd_' in cmd]
         
+        #Set up initial data
         self.server = server
         self.roomlist = roomlist
         self.roomdata = {}
@@ -56,6 +51,8 @@ class FritBot(muc.MUCClient):
             accepted_name_list.append(self.nickname.lower())
         accepted_names = '|'.join('({0})'.format(x) for x in accepted_name_list)
         
+        #Compile some regexes
+        #TODO: Remove these, do something better
         self.static_rex = {
             'ex': re.compile(r"\bex", re.I),
             'anex': re.compile(r"\ban ex", re.I),
@@ -66,6 +63,7 @@ class FritBot(muc.MUCClient):
             'question': re.compile(r'\? *\Z'),
             }    
         
+        #Set command order
         self.commands = [        
             (re.compile(r'\Ashut ?down', re.I), self.cmd_core_shutdown, 0),
             (re.compile('\Ainsult', re.I), self.cmd_bonus_insult, 2),
@@ -94,13 +92,18 @@ class FritBot(muc.MUCClient):
             (self.static_rex['learn'], self.cmd_facts_learn, 1),
         ]              
         
+        #Setup SQL
+        #TODO: Don't use a persistent connection, use new connection each use.
         self.sqlconnection = connection
         self.sql = self.sqlconnection.cursor()        
        
+    '''Join rooms on connect/reconnect.'''
     def initialized(self):
         for room, nick in self.roomlist.items():
             self.joinRoom(room, nick)
         
+    '''Perform post-join configuration.
+    Configure rooms that need to be before others can join.'''
     @defer.inlineCallbacks
     def initRoom(self, room):
         if int(room.status) == muc.STATUS_CODE_CREATED:
@@ -112,6 +115,7 @@ class FritBot(muc.MUCClient):
             
         reactor.callFromThread(self.fbInitRoom, room)
         
+    '''Joined a room, get the configuration or create default configuration'''
     def fbInitRoom(self, room):   
         sel = "select id, auth from rooms where name=#{0}#".format(room.name)
         self.doSQL(sel)
@@ -143,6 +147,7 @@ class FritBot(muc.MUCClient):
             
         self.roomlist[room.name] = room.nick 
         
+    '''Update user nicknames, if appropriate'''
     def doNickUpdate(self, user, room):    
         
         sel = "select id from nicks where nick=#{0}# and user=#{1}# and room=#{2}#".format(user.nick, user.fb_user_id, room.fbid)
@@ -152,6 +157,7 @@ class FritBot(muc.MUCClient):
         if row is not None:
             user.fb_nick_id = row[0]
         else:
+            #TODO: Do this correctly (Don't select the ID immediately after inserting! Theres a better way, but I'm too lazy to fix it right now
             ins = "insert into nicks (user, nick, room) values (#{0}#, #{1}#, #{2}#)".format(user.fb_user_id, user.nick, room.fbid)
             self.doSQL(ins)
             sel = "select id from nicks where nick=#{0}# and user=#{1}# and room=#{2}#".format(user.nick, user.fb_user_id, room.fbid)
@@ -159,6 +165,7 @@ class FritBot(muc.MUCClient):
             row = self.sql.fetchone()
             user.fb_nick_id = row[0]       
         
+    '''Called when a user joins a room'''
     def userJoinedRoom(self, room, user):
         sel = "select id from users where resource=#{0}#".format(user.resource)
         self.doSQL(sel)
@@ -168,6 +175,7 @@ class FritBot(muc.MUCClient):
             user.fb_user_id = row[0]            
             
         else:
+            #TODO: Do this correctly (Don't select the ID immediately after inserting! Theres a better way, but I'm too lazy to fix it right now
             ins = "insert into users (resource) values (#{0}#)".format(user.resource)
             self.doSQL(ins)
             sel = "select id from users where resource=#{0}#".format(user.resource)
@@ -175,33 +183,41 @@ class FritBot(muc.MUCClient):
             row = self.sql.fetchone()
             user.fb_user_id = row[0]
             
+        #Call a moment later to eliminate a race condition    
         reactor.callLater(0.5, self.doNickUpdate, user, room)
             
+    '''Called when a user changes their nickname'''
     def userUpdatedStatus(self, room, user, show, status):
         self.doNickUpdate(user, room)
         
+    '''Return the JID of the given room'''
     def rjid(self, room):
         return jid.internJID(room.name + '@conference.bazaarvoice.com/' + room.nick)
         
+    '''Perform an SQL command.'''    
     def doSQL(self, cmd, reprimand = True):
+        #TODO: Don't use persistent connections
         cmd = cmd.replace('"', "'").replace(';','').replace('#','"')
-        #print "Executing SQL:", cmd        
         self.sql.execute(cmd)
         return True
         
+    '''Join a room'''
     def joinRoom(self, room, nick):
         self.join("conference.bazaarvoice.com", room, nick).addCallback(self.initRoom)                           
         
+    '''Leave a room'''
     def leaveRoom(self, chan):
         cid = jid.internJID(chan + '@conference.bazaarvoice.com/' + self.roomlist[chan])
         self.leave(cid)
         del self.roomlist[chan]
         
+    '''Return squelched status of given room'''
     def squelched(self, room):                        
         if (time.time() > room.data['squelched'] and room.data['squelched'] > -1) and room.auth == 2:        
             return False                           
         return True        
         
+    '''Returns a random person in a room'''
     def getSomeone(self, room):
         k = []       
         for key in room.roster.keys():
@@ -212,7 +228,9 @@ class FritBot(muc.MUCClient):
             
         return who
     
+    '''Returns a random item.'''
     def getSomething(self, restrict=False, owned=False):
+        #TODO: Decouple this and migrate to commands.items
         if restrict:            
             if owned:
                 sel = "select name from items where backpack = 1 and removed is null order by rand() limit 1"
@@ -233,12 +251,15 @@ class FritBot(muc.MUCClient):
             
         return item
             
+    '''Adds a given item'''
     def getItem(what):
+        #TODO: Decouple this and migrate to commands.items
         upd = "update items set backpack=1 where name=#{0}#".format(what)
         self.doSQL(upd)
             
+    '''Send a message to a room'''
     def sendChat(self, room, message, slow = False):
-        #message = message.upper()
+        #TODO: Message modes (uppercase, l337, etc...)
         if slow:
             delay = random.random() * 3. + 1.5
             print "{0} ({1:.1}s delay): {2}".format(room.name, delay, message)
@@ -247,6 +268,7 @@ class FritBot(muc.MUCClient):
             print "{0}: {1}".format(room.name, message)            
             reactor.callLater(0.2, self.groupChat, self.rjid(room), message)    
             
+    '''Set up response callbacks'''
     def awaitResponse(self, room, function, user = None):
         #user None means allow from any user. any other value indicates that response is only allowed from that user.
         if user is not None:
@@ -256,7 +278,7 @@ class FritBot(muc.MUCClient):
             print "Registered callback response for room {0}, any user".format(room.name)
             room.data['responses'][0] = function
             
-            
+    '''Triggered when a group chat is recieved in a room the bot is in'''        
     def receivedGroupChat(self, room, user, body):
         if user is None or user.nick.lower() == room.nick.lower():
             return     
@@ -293,6 +315,7 @@ class FritBot(muc.MUCClient):
             if rex is None:
                 rex = re.search(r'\A@?(%s)[,:]?\s(?P<command>.*)' % room.nick, body, re.I)
             
+            #Check for invalid commands
             if rex is not None:
                 command = rex.group("command")
                 
@@ -301,10 +324,12 @@ class FritBot(muc.MUCClient):
                 
                 return    
             
+            #TODO: move this to commands.facts            
             #check for factoids                    
             if self.checkFactoids(body, user, room):   
                 return
             
+            #TODO: Move these to commands.bonus
             #sex replacement
             rex = self.static_rex['ex'].search(body)                            
             if rex is not None and random.random() > 0.6:
@@ -322,10 +347,10 @@ class FritBot(muc.MUCClient):
             if rex is not None or body == '\xe2\x80\xa6':
                 self.spoutFact(room, "varawkward", user.nick)
                 return     
-                
-                                                                                                                               
-        
+                                                                                                                                               
+    '''Check a line to see if any valid facts were triggered'''
     def checkFactoids(self, body, user, room, force=False):
+        #TODO: Move to commands.facts
         if len(body) < 2:
             return False                        
                             
@@ -378,7 +403,9 @@ class FritBot(muc.MUCClient):
                 
         return False
         
+    '''Perform token replacements'''
     def iterFact(self, room, fact):
+        #TODO: Make this function not quite so stupid
         if "$something" in fact:
             fact = re.sub(r'\$something', self.getSomething(), fact, 1)
             return fact, True, None
@@ -406,7 +433,9 @@ class FritBot(muc.MUCClient):
         
         return fact, False, None
         
+    '''Send a response to a given fact'''
     def spoutFact(self, room, target, who, what=""):
+        #TODO: Decouple and migrate to commands.facts
         sel = 'select verb, fact, id from factdata where removed is null and `trigger` = #{0}# order by rand() limit 1;'.format(target)
           
         if not self.doSQL(sel, False):
@@ -441,6 +470,7 @@ class FritBot(muc.MUCClient):
         
         return False
             
+    '''User has addressed the bot, attempt to perform a command.'''
     def doCommand(self, command, user, room):                    
         for compair in self.commands:
             if compair[0].search(command) is not None and compair[2] <= room.auth:

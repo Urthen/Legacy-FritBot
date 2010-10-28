@@ -1,5 +1,17 @@
 import re
 
+'''Get the user's position in the leaderboard'''
+def getPos(rows, nick):
+    pos = 0
+    lastcount = 0
+    for row in rows:
+        if row[1] != lastcount:
+            pos += 1
+        if nick == row[0]:
+            return "{0} (#{1})".format(row[1], pos)
+        lastcount = row[1]
+    return "None"
+
 '''Register functionality with the bot'''
 def register(bot):
     commands = [cmd for cmd in globals() if 'cmd_' in cmd]

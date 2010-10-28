@@ -1,4 +1,5 @@
 import re
+from twisted.internet import reactor
 
 '''Register functionality with the bot'''
 def register(bot):
@@ -12,7 +13,7 @@ def cmd_bonus_answer(self, command, user, room):
     self.spoutFact(room, "varanswer", user.nick)   
 
 '''Insult someone'''
-#TODO: Change this to a feasible factoid, because its stupid to have this hardcoded as a variable.
+#TODO: Change this to a factoid, because its stupid to have this hardcoded as a command.
 def cmd_bonus_insult(self, command, user, room):
     if self.squelched(room):
         return
@@ -91,6 +92,7 @@ def cmd_bonus_madlib(self, command, user, room):
     print wordslist
     print text                
     
+    #handle responses
     def madlibSecondary(self, command, user, room):                         
         responses = room.data['madlib']['responses']
         wordslist = room.data['madlib']['list']

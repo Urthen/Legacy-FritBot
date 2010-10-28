@@ -1,4 +1,4 @@
-import re  
+import re, time
 
 '''Register functionality with the bot'''
 def register(bot):
@@ -116,7 +116,7 @@ def cmd_core_quiet(self, command, user, room):
                         seconds *= 60 * 60
         message = "Ok, {0}, shutting up for {1}".format(user.nick, time.strftime('%H:%M:%S', time.gmtime(seconds)))
         self.sendChat(room, message)
-        room.squelched = time.time() + seconds        
+        room.data['squelched'] = time.time() + seconds        
 
 '''Unsquelch the bot'''
 def cmd_core_wakeup(self, command, user, room):

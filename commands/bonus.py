@@ -1,4 +1,4 @@
-import re
+import re, urllib, simplejson
 from twisted.internet import reactor
 
 '''Register functionality with the bot'''

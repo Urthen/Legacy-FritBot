@@ -3,7 +3,7 @@
 from twisted.internet import defer, reactor
 from twisted.words.protocols.jabber import jid
 from wokkel import muc
-import re, random, sys, time, datetime, urllib, simplejson
+import re, random, sys, datetime, time
 import commands.core, commands.common, commands.users, commands.facts, commands.items, commands.quotes, commands.bonus
 
 #TODO: Migrate this to a common module
@@ -436,6 +436,10 @@ class FritBot(muc.MUCClient):
     '''Send a response to a given fact'''
     def spoutFact(self, room, target, who, what=""):
         #TODO: Decouple and migrate to commands.facts
+        
+        if self.squelched(room):
+            return False
+            
         sel = 'select verb, fact, id from factdata where removed is null and `trigger` = #{0}# order by rand() limit 1;'.format(target)
           
         if not self.doSQL(sel, False):

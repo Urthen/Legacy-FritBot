@@ -1,10 +1,13 @@
-import re
+import re, random
 
-#TODO: Migrate this to a common module
+'''Clean up a string to make it suitable for use in facts'''
 def cleanup(string):
     return re.sub("[\\.,\\?!'\"-_=\\\\\\*]", '', string.lower()).strip()
     
+'''Trigger facts when said in chat'''
 def chatFactCheck(self, body, user, room):
+    if self.squelched(room):
+        return
     #pickup any factoids after "fritbot", otherwise treat it as a malformed command                        
     rex = self.static_rex['command'].search(body)
     
@@ -15,14 +18,69 @@ def chatFactCheck(self, body, user, room):
     if rex is not None:
         command = rex.group("command")
         
-        if not self.checkFactoids(command, user, room, True):            
+        if not checkFactoids(self, command, user, room, True):            
             self.spoutFact(room, "varerror", user.nick)    
         
         return 
         
     #check for factoids                    
-    if self.checkFactoids(body, user, room):   
+    if checkFactoids(self, body, user, room):   
         return
+        
+'''Check a line to see if any valid facts were triggered'''
+def checkFactoids(self, body, user, room, force=False):
+    #TODO: Move to commands.facts
+    if len(body) < 2:
+        return False                        
+                        
+    trigger = cleanup(body)
+    
+    sel = 'select target, id, count, triggered, locked from facts where `trigger` = #{0}#;'.format(trigger)                    
+        
+    if not self.doSQL(sel, False):
+        return False
+    
+    row = self.sql.fetchone()
+    
+    if row is None:
+        #second try!;
+        sel = 'select target, id, count, triggered, locked from facts where #{0}# like concat(#%#, `trigger`, #%#) and length(`trigger`) > 3 and locked >= 0 order by length(`trigger`) desc, rand() limit 1;'.format(trigger)
+        
+        if not self.doSQL(sel, False):
+            return False
+    
+        row = self.sql.fetchone()
+        if row is None:
+            return False
+            
+        target = row[0]
+        triggered = row[3]
+        if triggered is not None and force is False:            
+            delta = datetime.datetime.today() - triggered
+            if delta.days < 1:
+                chance = (delta.seconds / 10000.) - 0.15
+                print "Random chance of", target, ":", chance
+                if random.random() > chance:
+                    print target, "cancelled."
+                    return False
+    
+    if row is not None:
+        target = row[0]
+        tid = row[1]
+        count = row[2]            
+        locked = row[4]
+        
+        if locked == -1:
+            print target, "locked from triggering"
+            return        
+            
+        
+        upd = 'update facts set triggered=now(), count=count + 1 where id={0}'.format(tid)
+        self.doSQL(upd, False)                
+                
+        return self.spoutFact(room, target, user.nick)
+            
+    return False
 
 '''Alias one fact to another'''
 def cmd_facts_alias(self, command, user, room):

@@ -4,22 +4,13 @@ from twisted.internet import defer, reactor
 from twisted.words.protocols.jabber import jid
 from wokkel import muc
 import re, random, sys, datetime, time
-import commands.core, commands.common, commands.users, commands.facts, commands.items, commands.quotes, commands.bonus
-
-#TODO: Migrate this to a common module
-def cleanup(string):
-    return re.sub("[\\.,\\?!'\"-_=\\\\\\*]", '', string.lower()).strip()
-    
-#TODO: Figure out if I actually need this function...    
-def timeparse(s):
-    return datetime.datetime(int(s[0:4]),int(s[5:7]),int(s[8:10]),int(s[11:13]), int(s[14:16]), int(s[17:19]))
+import commands.core, commands.common, commands.users, commands.facts, commands.items, commands.quotes, commands.bonus  
     
 #Setup some global variables
 #TODO: Make these externally configurable    
 rawverblist = ["is", "isn\'?t", "has", "are", "hates", "loves", "likes", "aren\'?t", "said", "says"]
 accepted_name_list = ["fritbot", "fribot", "flirtbot", "fritbut", "fritbutt", "bucket", "fuckbucket", "firbot", "fb"]
 special_facts = ["itemtake", "itemswap", "varerror", "varinsult", "varfunny", "varawkward", "varinsult"]
-item_max = 12
 
 class FritBot(muc.MUCClient):   
     
@@ -65,12 +56,12 @@ class FritBot(muc.MUCClient):
             (re.compile('\Ainsult', re.I), commands.bonus.cmd_bonus_insult, 2),
             (re.compile('\A(((go)|(jump)) ((to)|(in))|(join))', re.I), commands.core.cmd_core_jump, 1),
             (re.compile('\A(leave)', re.I),  commands.core.cmd_core_leave, 0),
-            (re.compile('\A([^\.\?]*) ((or)|(vs)) ([^\.\?]+)[\?\.]?', re.I), commands.bonus.cmd_bonus_or, 2),
             (re.compile('((shut( the fuck)? ?up)|(quiet)|(go away))', re.I), commands.core.cmd_core_quiet, 0),
             (re.compile('((come back)|(wake up)|(\Atalk))', re.I), commands.core.cmd_core_wakeup, 1),
             (re.compile('\Aremember', re.I), commands.quotes.cmd_quotes_remember, 1),
             (re.compile('\Aquote ', re.I), commands.quotes.cmd_quotes_quote, 2),
             (re.compile('\A(un)?forget', re.I), commands.common.cmd_common_forget, 2),
+            (re.compile('\Aquotes?mash', re.I), commands.quotes.cmd_quotes_mash, 2),
             (re.compile(' alias ', re.I), commands.facts.cmd_facts_alias, 2),
             (re.compile('\Aquotestats', re.I), commands.quotes.cmd_quotes_quotestats, 2),
             (re.compile('\Awhat( the fuck)? was that', re.I), commands.facts.cmd_facts_whatwas, 2),
@@ -84,8 +75,9 @@ class FritBot(muc.MUCClient):
             (re.compile('\Aseen ', re.I), commands.users.cmd_users_seen, 1),
             (re.compile('mad ?lib', re.I), commands.bonus.cmd_bonus_madlib, 2),            
             (self.static_rex['question'], commands.bonus.cmd_bonus_answer, 2),            
-            (re.compile('(have)|(take)', re.I), commands.items.cmd_items_have, 2),            
-            (self.static_rex['learn'], commands.facts.cmd_facts_learn, 1),
+            (re.compile('(have)|(take)', re.I), commands.items.cmd_items_have, 2),                        
+            (re.compile('\A([^\.\?]*) ((or)|(vs)) ([^\.\?]+)[\?\.]?', re.I), commands.bonus.cmd_bonus_or, 2),
+            (self.static_rex['learn'], commands.facts.cmd_facts_learn, 1),            
         ]              
         
         #Setup SQL
@@ -247,12 +239,6 @@ class FritBot(muc.MUCClient):
             
         return item
             
-    '''Adds a given item'''
-    def getItem(what):
-        #TODO: Decouple this and migrate to commands.items
-        upd = "update items set backpack=1 where name=#{0}#".format(what)
-        self.doSQL(upd)
-            
     '''Send a message to a room'''
     def sendChat(self, room, message, slow = False):
         #TODO: Message modes (uppercase, l337, etc...)
@@ -306,62 +292,7 @@ class FritBot(muc.MUCClient):
         for trigger in self.chat_triggers:
             if trigger(self, body, user, room):
                break 
-                                                                                                                                               
-    '''Check a line to see if any valid facts were triggered'''
-    def checkFactoids(self, body, user, room, force=False):
-        #TODO: Move to commands.facts
-        if len(body) < 2:
-            return False                        
-                            
-        trigger = cleanup(body)
-        
-        sel = 'select target, id, count, triggered, locked from facts where `trigger` = #{0}#;'.format(trigger)                    
-            
-        if not self.doSQL(sel, False):
-            return False
-        
-        row = self.sql.fetchone()
-        
-        if row is None:
-            #second try!;
-            sel = 'select target, id, count, triggered, locked from facts where #{0}# like concat(#%#, `trigger`, #%#) and length(`trigger`) > 3 and locked >= 0 order by length(`trigger`) desc, rand() limit 1;'.format(trigger)
-            
-            if not self.doSQL(sel, False):
-                return False
-        
-            row = self.sql.fetchone()
-            if row is None:
-                return False
-                
-            target = row[0]
-            triggered = row[3]
-            if triggered is not None and force is False:            
-                delta = datetime.datetime.today() - triggered
-                if delta.days < 1:
-                    chance = (delta.seconds / 10000.) - 0.15
-                    print "Random chance of", target, ":", chance
-                    if random.random() > chance:
-                        print target, "cancelled."
-                        return False
-        
-        if row is not None:
-            target = row[0]
-            tid = row[1]
-            count = row[2]            
-            locked = row[4]
-            
-            if locked == -1:
-                print target, "locked from triggering"
-                return        
-                
-            
-            upd = 'update facts set triggered=now(), count=count + 1 where id={0}'.format(tid)
-            self.doSQL(upd, False)                
-                    
-            return self.spoutFact(room, target, user.nick)
-                
-        return False
-        
+                                                                                                                                                           
     '''Perform token replacements'''
     def iterFact(self, room, fact):
         #TODO: Make this function not quite so stupid

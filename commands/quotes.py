@@ -1,10 +1,10 @@
-import re
+import re, random
      
 '''Quote a given user and quote'''
 def cmd_quotes_quote(self, command, user, room):       
     if self.squelched(room):
         return
-    rex = re.match("quote (?P<user>[^']+)( (['\"](?P<what>.+)['\"])?", command, re.I)
+    rex = re.match("quote (?P<user>[^']+) ?(['\"](?P<what>.+)['\"])?", command, re.I)
     
     if rex is not None:
         user = rex.group("user").strip()
@@ -104,3 +104,14 @@ def cmd_quotes_quotestats(self, command, user, room):
         return        
         
     self.sendChat(room, "Show quote stats for who?")
+    
+'''Quotemashing: Generate a random conversation based on remembered quotes'''
+def cmd_quotes_mash(self, command, user, room):
+    limit = random.randrange(2, 6)
+    sel = "select quote from quotes order by rand() limit {0}".format(limit)
+    self.doSQL(sel)
+    row = self.sql.fetchone()
+    
+    while row is not None:
+        self.sendChat(room, row[0])
+        row = self.sql.fetchone()

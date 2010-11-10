@@ -1,4 +1,6 @@
 import re
+
+item_max = 12
     
 '''List contents of the backpack'''
 def cmd_items_backpack(self, command, user, room):

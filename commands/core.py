@@ -30,7 +30,7 @@ def cmd_core_ghost(self, command, user, room):
     
 '''Jump into another room'''
 def cmd_core_jump(self, command, user, room):
-    rex = re.match(r'(((go)|(jump)) ((to)|(in))|(join)) (?P<chan>[\S]+)( (?P<as>.*))?', command, re.I)
+    rex = re.match(r'(((go)|(jump)) ((to)|(in))|(join)) (?P<chan>[\S]+)( as)?( (?P<as>.*))?', command, re.I)
     if rex is None:
         self.sendChat(room, "Go where, {0}?".format(user.nick))
         return

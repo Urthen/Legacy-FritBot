@@ -1,7 +1,9 @@
-import re, urllib, simplejson
+import re, urllib, simplejson, random
 from twisted.internet import reactor
 
 def chatReplacements(self, body, user, room):
+    if self.squelched(room):
+        return
     #sex replacement
     rex = self.static_rex['ex'].search(body)                            
     if rex is not None and random.random() > 0.6:

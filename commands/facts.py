@@ -1,4 +1,4 @@
-import re, random
+import re, random, datetime
 
 '''Clean up a string to make it suitable for use in facts'''
 def cleanup(string):
@@ -29,7 +29,6 @@ def chatFactCheck(self, body, user, room):
         
 '''Check a line to see if any valid facts were triggered'''
 def checkFactoids(self, body, user, room, force=False):
-    #TODO: Move to commands.facts
     if len(body) < 2:
         return False                        
                         

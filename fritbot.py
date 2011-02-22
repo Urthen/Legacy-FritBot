@@ -73,10 +73,10 @@ class FritBot(muc.MUCClient):
             (re.compile('\A((google)|(search)) ', re.I), commands.bonus.cmd_bonus_google, 1),
             (re.compile('\Aauth ', re.I), commands.core.cmd_core_auth, 0),
             (re.compile('\Aseen ', re.I), commands.users.cmd_users_seen, 1),
-            (re.compile('mad ?lib', re.I), commands.bonus.cmd_bonus_madlib, 2),            
-            (self.static_rex['question'], commands.bonus.cmd_bonus_answer, 2),            
+            (re.compile('mad ?lib', re.I), commands.bonus.cmd_bonus_madlib, 2),         
             (re.compile('(have)|(take)', re.I), commands.items.cmd_items_have, 2),                        
-            (re.compile('\A([^\.\?]*) ((or)|(vs)) ([^\.\?]+)[\?\.]?', re.I), commands.bonus.cmd_bonus_or, 2),
+            (re.compile('\A([^\.\?]*) ((or)|(vs)) ([^\.\?]+)[\?\.]?', re.I), commands.bonus.cmd_bonus_or, 2),                        
+            (self.static_rex['question'], commands.bonus.cmd_bonus_answer, 2),   
             (self.static_rex['learn'], commands.facts.cmd_facts_learn, 1),            
         ]              
         
@@ -270,9 +270,6 @@ class FritBot(muc.MUCClient):
         #TODO: Check if this user is completely ignored.
         
         print "Processing body:", room.name, user.nick, user.fb_user_id, user.fb_nick_id, body            
-                
-        upd = "update nicks set lastseen=now(), activity=activity + 1, said=#{1}# where id = #{0}#".format(user.fb_nick_id, body)
-        self.doSQL(upd)          
         
         #commands come first and shouldn't be recorded in history
         rex = self.static_rex['command'].search(body)

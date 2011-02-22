@@ -108,7 +108,7 @@ def cmd_quotes_quotestats(self, command, user, room):
 '''Quotemashing: Generate a random conversation based on remembered quotes'''
 def cmd_quotes_mash(self, command, user, room):
     limit = random.randrange(2, 6)
-    sel = "select quote from quotes order by rand() limit {0}".format(limit)
+    sel = "select quote from quotes where removed is null order by rand() limit {0}".format(limit)
     self.doSQL(sel)
     row = self.sql.fetchone()
     

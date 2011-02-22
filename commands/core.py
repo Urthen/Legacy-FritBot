@@ -95,7 +95,7 @@ def cmd_core_quiet(self, command, user, room):
         t = rex.group("time")            
         seconds = 240
         if t is not None:
-            if t == "a sec":
+            if t == "a sec" or t == "a second":
                 seconds = 30
             elif t == "a bit":
                 seconds = 300
@@ -120,7 +120,7 @@ def cmd_core_wakeup(self, command, user, room):
             self.sendChat(room, "Sorry, I can't talk in this room.")
         else:
             self.sendChat(room, "Ok, {0}, I'm back.".format(user.nick))
-            room.squelched = 0
+            room.data['squelched'] = 0
     else:
         self.sendChat(room, "I was already back, but thanks for the invitation.")
 
